@@ -1,18 +1,24 @@
-name: Build Motion APK
+name: Build Android APK (Local Gradle)
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
-  build:
+  build-apk:
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout
+      - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Node
+      - name: ☕ Setup Java (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -23,34 +29,45 @@ jobs:
           version: 12
 
       - name: 📦 Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile=false
 
-      - name: 🔧 Setup EAS
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+      - name: 📱 Prebuild Native Android Project
+        run: npx expo prebuild --platform android --clean
 
-      - name: 🏗️ Build APK
-        run: eas build --platform android --profile preview --non-interactive --output ./motion-release.apk
-        
-      - name: 🚀 Upload APK as Release
+      - name: 🛠️ Setup Gradle Cache
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: 🏗️ Build APK with Gradle
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: 📦 Locate APK
+        id: find_apk
+        run: |
+          APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          fi
+          echo "Found APK at: $APK_PATH"
+          cp "$APK_PATH" ./Motion-v1.0.apk
+          echo "apk_path=./Motion-v1.0.apk" >> $GITHUB_OUTPUT
+
+      - name: 🚀 Release APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}.0.0
-          name: "Motion v${{ github.run_number }}.0.0"
+          tag_name: v1.0.${{ github.run_number }}
+          name: "Motion App v1.0.${{ github.run_number }} (Release APK)"
           body: |
-            ## 🎬 Motion App - Auto Build
-            APK automatically built from latest code.
+            ### 🎬 Motion App - Direct Download
+            Directly compiled Android APK. Ready to install!
             
-            ### What's new:
-            - Auto Caption from Voice/SRT
-            - 20 Motion Graphic Templates  
-            - Logo overlay support
-            - Sound Effects library
-            - Export 9:16 & 16:9
-          files: ./motion-release.apk
+            **Features included:**
+            - 🎙️ SRT to Animated Caption Video
+            - 🎨 20 Motion Graphic Templates
+            - 🖼️ Logo watermark & customization
+            - 🔊 Sound Effects & Audio sync
+            - 📐 9:16 Reel & 16:9 YouTube format
+          files: ./Motion-v1.0.apk
           draft: false
           prerelease: false
         env:
