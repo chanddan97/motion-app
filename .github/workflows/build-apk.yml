@@ -1,0 +1,57 @@
+name: Build Motion APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - name: 📦 Install dependencies
+        run: pnpm install
+
+      - name: 🔧 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🏗️ Build APK
+        run: eas build --platform android --profile preview --non-interactive --output ./motion-release.apk
+        
+      - name: 🚀 Upload APK as Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}.0.0
+          name: "Motion v${{ github.run_number }}.0.0"
+          body: |
+            ## 🎬 Motion App - Auto Build
+            APK automatically built from latest code.
+            
+            ### What's new:
+            - Auto Caption from Voice/SRT
+            - 20 Motion Graphic Templates  
+            - Logo overlay support
+            - Sound Effects library
+            - Export 9:16 & 16:9
+          files: ./motion-release.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

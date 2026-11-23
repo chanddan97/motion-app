@@ -1,0 +1,257 @@
+// Theme & Colors
+export const COLORS = {
+  bg: '#0A0A0F',
+  bgCard: '#13131A',
+  bgElevated: '#1C1C28',
+  primary: '#7C3AED',
+  primaryLight: '#A78BFA',
+  accent: '#F59E0B',
+  accentGold: '#FFD700',
+  white: '#FFFFFF',
+  whiteAlpha80: 'rgba(255,255,255,0.8)',
+  whiteAlpha40: 'rgba(255,255,255,0.4)',
+  whiteAlpha10: 'rgba(255,255,255,0.1)',
+  success: '#10B981',
+  error: '#EF4444',
+  border: 'rgba(255,255,255,0.08)',
+};
+
+export const GRADIENTS = {
+  primary: ['#7C3AED', '#4F46E5'],
+  gold: ['#F59E0B', '#D97706'],
+  dark: ['#13131A', '#0A0A0F'],
+  fire: ['#EF4444', '#F97316'],
+  neon: ['#06B6D4', '#8B5CF6'],
+};
+
+// Font families
+export const FONTS = {
+  bengali: [
+    { name: 'Hind Siliguri', value: 'HindSiliguri' },
+    { name: 'Baloo Da 2', value: 'BalooDa2' },
+    { name: 'Noto Sans Bengali', value: 'NotoSansBengali' },
+  ],
+  english: [
+    { name: 'Montserrat', value: 'Montserrat' },
+    { name: 'Bebas Neue', value: 'BebasNeue' },
+    { name: 'Rajdhani', value: 'Rajdhani' },
+    { name: 'Oswald', value: 'Oswald' },
+    { name: 'Playfair Display', value: 'PlayfairDisplay' },
+  ],
+};
+
+// 20 Templates
+export const TEMPLATES = [
+  // 🔥 Energetic
+  {
+    id: 'fire_punch',
+    name: 'Fire Punch',
+    category: 'energetic',
+    emoji: '🔥',
+    preview: { bg: '#1A0505', text: '#FF4500', accent: '#FF8C00' },
+    animation: 'punch',
+    description: 'Word-by-word punch-in with fire glow',
+  },
+  {
+    id: 'electric_bolt',
+    name: 'Electric Bolt',
+    category: 'energetic',
+    emoji: '⚡',
+    preview: { bg: '#0A0A00', text: '#FFE000', accent: '#FFFFFF' },
+    animation: 'lightning',
+    description: 'Yellow text with lightning flash effect',
+  },
+  {
+    id: 'beast_mode',
+    name: 'Beast Mode',
+    category: 'energetic',
+    emoji: '💪',
+    preview: { bg: '#050505', text: '#FFFFFF', accent: '#FF0000' },
+    animation: 'shake',
+    description: 'Heavy font with shake animation',
+  },
+  {
+    id: 'drop_impact',
+    name: 'Drop Impact',
+    category: 'energetic',
+    emoji: '💥',
+    preview: { bg: '#0F0800', text: '#FFAA00', accent: '#FF5500' },
+    animation: 'drop',
+    description: 'Text drops from top with impact dust',
+  },
+  // ✨ Luxury
+  {
+    id: 'gold_rush',
+    name: 'Gold Rush',
+    category: 'luxury',
+    emoji: '✨',
+    preview: { bg: '#050300', text: '#FFD700', accent: '#FFA500' },
+    animation: 'shimmer',
+    description: 'Gold shimmer text with particles',
+  },
+  {
+    id: 'diamond_cut',
+    name: 'Diamond Cut',
+    category: 'luxury',
+    emoji: '💎',
+    preview: { bg: '#050810', text: '#E8F4FF', accent: '#7EC8E3' },
+    animation: 'glass',
+    description: 'Glass morphism, elegant silver fade',
+  },
+  {
+    id: 'royal_dark',
+    name: 'Royal Dark',
+    category: 'luxury',
+    emoji: '👑',
+    preview: { bg: '#0D0518', text: '#D4AF37', accent: '#7B2FBE' },
+    animation: 'reveal',
+    description: 'Deep purple royal slow reveal',
+  },
+  {
+    id: 'platinum',
+    name: 'Platinum',
+    category: 'luxury',
+    emoji: '🥈',
+    preview: { bg: '#0A0A0A', text: '#E5E5E5', accent: '#C0C0C0' },
+    animation: 'shine',
+    description: 'Metallic shine sweep effect',
+  },
+  // 🌊 Cinematic
+  {
+    id: 'cinema_scope',
+    name: 'Cinema Scope',
+    category: 'cinematic',
+    emoji: '🎬',
+    preview: { bg: '#000000', text: '#FFFFFF', accent: '#FFFF00' },
+    animation: 'fade',
+    description: 'Black bars, movie subtitle style',
+  },
+  {
+    id: 'liquid_flow',
+    name: 'Liquid Flow',
+    category: 'cinematic',
+    emoji: '🌊',
+    preview: { bg: '#020B18', text: '#7DD3FC', accent: '#0EA5E9' },
+    animation: 'flow',
+    description: 'Words float like water ripple',
+  },
+  {
+    id: 'soft_blur',
+    name: 'Soft Blur',
+    category: 'cinematic',
+    emoji: '🫧',
+    preview: { bg: '#0A0F1E', text: '#E0E7FF', accent: '#818CF8' },
+    animation: 'blur_fade',
+    description: 'Frosted glass, smooth fade in/out',
+  },
+  {
+    id: 'drift',
+    name: 'Drift',
+    category: 'cinematic',
+    emoji: '🍃',
+    preview: { bg: '#030712', text: '#F9FAFB', accent: '#6B7280' },
+    animation: 'drift',
+    description: 'Text floats in from side gently',
+  },
+  // 👾 Trendy
+  {
+    id: 'neon_cyber',
+    name: 'Neon Cyber',
+    category: 'trendy',
+    emoji: '👾',
+    preview: { bg: '#000308', text: '#FF00FF', accent: '#00FFFF' },
+    animation: 'neon_flicker',
+    description: 'Neon glow with scanlines',
+  },
+  {
+    id: 'glitch_wave',
+    name: 'Glitch Wave',
+    category: 'trendy',
+    emoji: '🌀',
+    preview: { bg: '#050005', text: '#FFFFFF', accent: '#FF00AA' },
+    animation: 'glitch',
+    description: 'RGB split digital glitch effect',
+  },
+  {
+    id: 'retro_vhs',
+    name: 'Retro VHS',
+    category: 'trendy',
+    emoji: '📼',
+    preview: { bg: '#0A0010', text: '#00FF00', accent: '#FF00FF' },
+    animation: 'vhs_scan',
+    description: 'VHS tape retro scanline effect',
+  },
+  {
+    id: 'pixel_pop',
+    name: 'Pixel Pop',
+    category: 'trendy',
+    emoji: '🕹️',
+    preview: { bg: '#000820', text: '#FFFFFF', accent: '#FF6B35' },
+    animation: 'pixel',
+    description: '8-bit pixel reveal animation',
+  },
+  // 🌿 Minimal
+  {
+    id: 'pure_white',
+    name: 'Pure White',
+    category: 'minimal',
+    emoji: '⬜',
+    preview: { bg: '#FFFFFF', text: '#111111', accent: '#7C3AED' },
+    animation: 'underline_reveal',
+    description: 'Clean minimal underline animation',
+  },
+  {
+    id: 'ink_drop',
+    name: 'Ink Drop',
+    category: 'minimal',
+    emoji: '✍️',
+    preview: { bg: '#F8F8F0', text: '#1A1A1A', accent: '#2C2C2C' },
+    animation: 'ink_spread',
+    description: 'Text spreads like ink drops',
+  },
+  {
+    id: 'pastel_dream',
+    name: 'Pastel Dream',
+    category: 'minimal',
+    emoji: '🌸',
+    preview: { bg: '#FFF0F5', text: '#6B3A5B', accent: '#FF9CC2' },
+    animation: 'bubble_pop',
+    description: 'Soft pastel bubble text animation',
+  },
+  {
+    id: 'paper_cut',
+    name: 'Paper Cut',
+    category: 'minimal',
+    emoji: '📄',
+    preview: { bg: '#F5F0E8', text: '#3D2B1F', accent: '#8B6914' },
+    animation: 'handwrite',
+    description: 'Paper texture handwritten feel',
+  },
+];
+
+export const TEMPLATE_CATEGORIES = [
+  { id: 'all', label: 'সব Templates', emoji: '🎨' },
+  { id: 'energetic', label: 'Energetic', emoji: '🔥' },
+  { id: 'luxury', label: 'Luxury', emoji: '✨' },
+  { id: 'cinematic', label: 'Cinematic', emoji: '🎬' },
+  { id: 'trendy', label: 'Trendy', emoji: '👾' },
+  { id: 'minimal', label: 'Minimal', emoji: '⬜' },
+];
+
+export const VIDEO_FORMATS = [
+  { id: 'reel', label: 'Reel / Story', ratio: '9:16', width: 1080, height: 1920 },
+  { id: 'youtube', label: 'YouTube', ratio: '16:9', width: 1920, height: 1080 },
+  { id: 'square', label: 'Square', ratio: '1:1', width: 1080, height: 1080 },
+];
+
+export const LOGO_POSITIONS = [
+  { id: 'top_left', label: '↖ Top Left' },
+  { id: 'top_center', label: '↑ Top Center' },
+  { id: 'top_right', label: '↗ Top Right' },
+  { id: 'mid_left', label: '← Mid Left' },
+  { id: 'center', label: '⊙ Center' },
+  { id: 'mid_right', label: '→ Mid Right' },
+  { id: 'bot_left', label: '↙ Bottom Left' },
+  { id: 'bot_center', label: '↓ Bottom Center' },
+  { id: 'bot_right', label: '↘ Bottom Right' },
+];
