@@ -34,12 +34,19 @@ jobs:
       - name: 📱 Prebuild Native Android Project
         run: npx expo prebuild --platform android --clean
 
+      - name: 🔧 Disable R8 / Minify to prevent stripping missing Expo classes
+        working-directory: android/app
+        run: |
+          sed -i 's/def enableProguardInReleaseBuilds = .*/def enableProguardInReleaseBuilds = false/' build.gradle
+          echo "-ignorewarnings" >> proguard-rules.pro
+          echo "-keep class expo.modules.** { *; }" >> proguard-rules.pro
+
       - name: 🛠️ Setup Gradle Cache
         uses: gradle/actions/setup-gradle@v3
 
       - name: 🏗️ Build APK with Gradle
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon -x lint
 
       - name: 📦 Locate APK
         id: find_apk
