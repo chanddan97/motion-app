@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Motion - Auto Caption & Motion Graphics Video Maker</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #0A0A0F; color: #FFF; min-height: 100vh; display: flex; flex-direction: column; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; background: rgba(19, 19, 26, 0.85); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .logo-badge { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #7C3AED, #4F46E5); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; }
+        .brand { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+        .container { max-width: 500px; margin: 0 auto; width: 100%; padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        .card { background: #13131A; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 20px; }
+        .title { font-size: 18px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .upload-area { border: 2px dashed #7C3AED; border-radius: 16px; padding: 30px 20px; text-align: center; cursor: pointer; background: rgba(124, 58, 237, 0.05); transition: 0.2s; }
+        .upload-area:hover { background: rgba(124, 58, 237, 0.12); }
+        .upload-area input { display: none; }
+        .btn { background: linear-gradient(135deg, #7C3AED, #4F46E5); border: none; color: white; padding: 14px 20px; border-radius: 14px; font-weight: 700; font-size: 15px; cursor: pointer; width: 100%; text-align: center; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-green { background: linear-gradient(135deg, #10B981, #059669); }
+        .templates-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
+        .tpl-card { border-radius: 14px; padding: 14px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .tpl-card.active { border-color: #A78BFA; box-shadow: 0 0 15px rgba(167, 139, 250, 0.4); }
+        .video-box { width: 100%; aspect-ratio: 9/16; background: #000; border-radius: 18px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); }
+        .caption-text { position: absolute; font-size: 24px; font-weight: 900; text-align: center; width: 85%; transition: 0.15s; }
+        .watermark { position: absolute; bottom: 20px; right: 20px; background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-box">
+            <div class="logo-badge">M</div>
+            <div class="brand">Motion Studio</div>
+        </div>
+        <span style="font-size: 12px; color: #10B981; background: rgba(16,185,129,0.15); padding: 4px 10px; border-radius: 20px;">Ready</span>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="title">📄 SRT / Voice Upload</div>
+            <label class="upload-area" for="srtInput">
+                <div style="font-size: 36px; margin-bottom: 8px;">📂</div>
+                <div style="font-weight: bold; font-size: 15px;">SRT File বেছে নিন</div>
+                <div style="font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px;">বা Sample ডাটা দিয়ে টেস্ট করুন</div>
+                <input type="file" id="srtInput" accept=".srt,.txt">
+            </label>
+            <button class="btn" style="margin-top: 12px; background: #1C1C28;" onclick="loadDemoData()">✨ ডেমো ডাটা লোড করুন</button>
+        </div>
+
+        <div class="card">
+            <div class="title">🎨 20 Motion Graphics Templates</div>
+            <div class="templates-grid" id="tplGrid"></div>
+        </div>
+
+        <div class="card">
+            <div class="title">📱 Live Preview (9:16 Reel)</div>
+            <div class="video-box" id="previewScreen">
+                <div class="caption-text" id="captionDisplay">Motion Studio</div>
+                <div class="watermark">Motion • 9:16</div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 14px;">
+                <button class="btn btn-green" onclick="playPreview()">▶ প্লে প্রিভিউ</button>
+                <button class="btn" onclick="alert('অটোমেটিক রেন্ডার সম্পন্ন হবে!')">💾 সেভ ভিডিও</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const templates = [
+            { id: 'fire', name: 'Fire Punch', bg: '#1A0505', color: '#FF4500', glow: '#FF8C00' },
+            { id: 'bolt', name: 'Electric Bolt', bg: '#0A0A00', color: '#FFE000', glow: '#FFF' },
+            { id: 'beast', name: 'Beast Mode', bg: '#050505', color: '#FFF', glow: '#F00' },
+            { id: 'gold', name: 'Gold Rush', bg: '#050300', color: '#FFD700', glow: '#FFA500' },
+            { id: 'neon', name: 'Neon Cyber', bg: '#000308', color: '#FF00FF', glow: '#00FFFF' },
+            { id: 'cine', name: 'Cinema Scope', bg: '#000', color: '#FFF', glow: '#FFFF00' }
+        ];
+
+        let activeTemplate = templates[0];
+        let currentCaptions = [
+            { start: 0, text: "Motion স্টুডিওতে স্বাগতম" },
+            { start: 1.5, text: "অডিও থেকে মোশন ক্যাপশন" },
+            { start: 3.0, text: "20+ স্টাইলিশ টেমপ্লেট রেডি" }
+        ];
+
+        const tplGrid = document.getElementById('tplGrid');
+        templates.forEach((t, i) => {
+            const div = document.createElement('div');
+            div.className = 'tpl-card ' + (i === 0 ? 'active' : '');
+            div.style.background = t.bg;
+            div.style.color = t.color;
+            div.innerHTML = `<div style="font-weight:bold; font-size:14px;">${t.name}</div><div style="font-size:11px; opacity:0.8;">Sample text</div>`;
+            div.onclick = () => {
+                document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('active'));
+                div.classList.add('active');
+                activeTemplate = t;
+                applyTemplate();
+            };
+            tplGrid.appendChild(div);
+        });
+
+        function applyTemplate() {
+            const screen = document.getElementById('previewScreen');
+            const cap = document.getElementById('captionDisplay');
+            screen.style.background = activeTemplate.bg;
+            cap.style.color = activeTemplate.color;
+            cap.style.textShadow = `0 0 15px ${activeTemplate.glow}`;
+        }
+
+        function loadDemoData() {
+            alert('ডেমো ক্যাপশন ডাটা সফলভাবে লোড হয়েছে!');
+            playPreview();
+        }
+
+        function playPreview() {
+            applyTemplate();
+            const cap = document.getElementById('captionDisplay');
+            currentCaptions.forEach((c) => {
+                setTimeout(() => {
+                    cap.innerText = c.text;
+                    cap.style.transform = 'scale(1.15)';
+                    setTimeout(() => cap.style.transform = 'scale(1)', 150);
+                }, c.start * 1000);
+            });
+        }
+
+        applyTemplate();
+    </script>
+</body>
+</html>

@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  StatusBar,
+  
   TouchableOpacity,
   Animated,
   Dimensions,
   Alert,
 } from 'react-native';
-import { LinearGradient } from 'react-native-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../constants';
 
 const { width } = Dimensions.get('window');
@@ -83,7 +83,7 @@ export default function RenderScreen({ navigation, route }: RenderScreenProps) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      
 
       {/* Background animated gradient */}
       <LinearGradient

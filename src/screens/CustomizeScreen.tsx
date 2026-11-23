@@ -4,14 +4,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  StatusBar,
+  
   ScrollView,
   Switch,
   Alert,
   ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'react-native-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, TEMPLATES, LOGO_POSITIONS, VIDEO_FORMATS, FONTS } from '../constants';
 import { CaptionJSON } from '../types';
 
@@ -71,7 +71,7 @@ export default function CustomizeScreen({ navigation, route }: CustomizeScreenPr
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backIcon}>←</Text>

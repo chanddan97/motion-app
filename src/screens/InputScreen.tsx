@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  StatusBar,
+  
   Alert,
   ActivityIndicator,
   TextInput,
@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
-import { LinearGradient } from 'react-native-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import { parseSRT, srtToMotionJSON, generateSampleSRT } from '../utils/srtParser';
 import { COLORS } from '../constants';
 
@@ -68,7 +68,7 @@ export default function InputScreen({ navigation }: InputScreenProps) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      
 
       {/* Header */}
       <View style={styles.header}>

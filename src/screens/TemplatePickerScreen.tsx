@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  StatusBar,
+  
   FlatList,
   Dimensions,
 } from 'react-native';
@@ -14,7 +14,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'react-native-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import { TEMPLATES, TEMPLATE_CATEGORIES, COLORS } from '../constants';
 
 const { width } = Dimensions.get('window');
@@ -48,7 +48,7 @@ export default function TemplatePicker({ navigation, route }: TemplatePickerProp
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      
 
       {/* Header */}
       <View style={styles.header}>

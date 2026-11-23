@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  StatusBar,
+  
   ScrollView,
   Image,
   Dimensions,
@@ -17,7 +17,7 @@ import Animated, {
   withSequence,
   Easing,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'react-native-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../constants';
 
 const { width, height } = Dimensions.get('window');
@@ -34,12 +34,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   React.useEffect(() => {
     orb1Y.value = withRepeat(
-      withTiming(-20, { duration: 3000, easing: Easing.inOut(Easing.sine) }),
+      withTiming(-20, { duration: 3000, easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
     orb2Y.value = withRepeat(
-      withTiming(20, { duration: 4000, easing: Easing.inOut(Easing.sine) }),
+      withTiming(20, { duration: 4000, easing: Easing.inOut(Easing.sin) }),
       -1,
       true
     );
@@ -64,7 +64,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.bg} />
+      
 
       {/* Background Orbs */}
       <Animated.View style={[styles.orb1, orb1Style]} />

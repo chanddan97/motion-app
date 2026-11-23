@@ -62,7 +62,14 @@ jobs:
           cp "$APK_PATH" ./Motion-v1.0.apk
           echo "apk_path=./Motion-v1.0.apk" >> $GITHUB_OUTPUT
 
+      - name: 📤 Upload APK Artifact (Direct Download from Actions)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Motion-App-APK
+          path: ./Motion-v1.0.apk
+
       - name: 🚀 Release APK
+        continue-on-error: true
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
