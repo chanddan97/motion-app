@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundColor": "#0A0A0F"
       },
       "package": "com.motion.captionapp",
@@ -43,11 +43,6 @@
           "iCloudContainerEnvironment": "Production"
         }
       ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "motion-caption-app"
-      }
-    }
+    ]
   }
 }
