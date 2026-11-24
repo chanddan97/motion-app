@@ -1,8 +1,7 @@
-export interface SRTCaption {
-  id: number;
-  start: number; // seconds
-  end: number;   // seconds
-  text: string;
+export interface WordTiming {
+  word: string;
+  start: number;
+  end: number;
 }
 
 export interface CaptionJSON {
@@ -11,38 +10,31 @@ export interface CaptionJSON {
   end: number;
   text: string;
   words: string[];
+  wordTimeline?: WordTiming[];
+  emotion?: string;
+  sfx?: string;
   duration: number;
 }
 
-export interface Project {
-  id: string;
-  name: string;
-  createdAt: number;
-  captions: CaptionJSON[];
+export interface SRTCaption {
+  id: number;
+  start: number;
+  end: number;
+  text: string;
+}
+
+export interface ProjectSettings {
   templateId: string;
+  videoFormat: 'reel' | 'youtube' | 'square';
   fontFamily: string;
   fontSize: number;
   textColor: string;
+  accentColor: string;
   logoUri?: string;
   logoPosition: string;
   logoOpacity: number;
   logoSize: number;
   sfxEnabled: boolean;
-  sfxCategory: string;
-  videoFormat: string;
-  outputUri?: string;
-}
-
-export interface Template {
-  id: string;
-  name: string;
-  category: string;
-  emoji: string;
-  preview: {
-    bg: string;
-    text: string;
-    accent: string;
-  };
-  animation: string;
-  description: string;
+  audioUri?: string;
+  audioDuration?: number;
 }

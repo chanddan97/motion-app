@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  
   Alert,
   ActivityIndicator,
   TextInput,
@@ -13,7 +12,7 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { LinearGradient } from 'expo-linear-gradient';
-import { parseSRT, srtToMotionJSON, generateSampleSRT } from '../utils/srtParser';
+import { parseSRT, srtToMotionJSON } from '../utils/srtParser';
 import { COLORS } from '../constants';
 
 interface InputScreenProps {
@@ -22,135 +21,238 @@ interface InputScreenProps {
 
 export default function InputScreen({ navigation }: InputScreenProps) {
   const [loading, setLoading] = useState(false);
-  const [srtPreview, setSrtPreview] = useState('');
-  const [captionCount, setCaptionCount] = useState(0);
+  const [audioFile, setAudioFile] = useState<{ uri: string; name: string } | null>(null);
+  const [srtFile, setSrtFile] = useState<{ name: string; content: string } | null>(null);
+  const [jsonInput, setJsonInput] = useState('');
+  const [activeTab, setActiveTab] = useState<'srt' | 'json'>('srt');
 
+  // 1. Pick Audio
+  const pickAudioFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['audio/*'],
+        copyToCacheDirectory: true,
+      });
+      if (!result.canceled && result.assets && result.assets[0]) {
+        setAudioFile({
+          uri: result.assets[0].uri,
+          name: result.assets[0].name,
+        });
+      }
+    } catch (e) {
+      Alert.alert('Error', 'অডিও সিলেক্ট করা যায়নি।');
+    }
+  };
+
+  // 2. Pick SRT File
   const pickSRTFile = async () => {
     try {
       setLoading(true);
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['text/*', 'application/octet-stream'],
+        type: ['text/*', 'application/octet-stream', '*/*'],
         copyToCacheDirectory: true,
       });
 
-      if (result.canceled) { setLoading(false); return; }
-
-      const file = result.assets[0];
-      const content = await FileSystem.readAsStringAsync(file.uri);
-
-      const parsed = parseSRT(content);
-      if (parsed.length === 0) {
-        Alert.alert('⚠️ Error', 'SRT file parse করা যায়নি। Format ঠিক আছে কিনা দেখো।');
+      if (result.canceled || !result.assets) {
         setLoading(false);
         return;
       }
 
-      const json = srtToMotionJSON(parsed);
-      setCaptionCount(json.length);
-      setSrtPreview(content.slice(0, 300) + '...');
+      const file = result.assets[0];
+      const content = await FileSystem.readAsStringAsync(file.uri);
+      const parsed = parseSRT(content);
 
-      navigation.navigate('TemplatePicker', { captions: json });
+      if (parsed.length === 0) {
+        Alert.alert('⚠️ Error', 'SRT ফাইলে সঠিক ক্যাপশন টাইমলাইন পাওয়া যায়নি।');
+        setLoading(false);
+        return;
+      }
+
+      setSrtFile({
+        name: file.name,
+        content,
+      });
     } catch (e) {
-      Alert.alert('Error', 'File read করতে সমস্যা হয়েছে।');
+      Alert.alert('Error', 'SRT ফাইল লোড করতে সমস্যা হয়েছে।');
     } finally {
       setLoading(false);
     }
   };
 
-  const useSampleSRT = () => {
-    const sample = generateSampleSRT();
-    const parsed = parseSRT(sample);
-    const json = srtToMotionJSON(parsed);
-    setSrtPreview(sample);
-    setCaptionCount(json.length);
-    navigation.navigate('TemplatePicker', { captions: json });
+  // 3. Process & Start Studio Preview
+  const handleProceed = () => {
+    let captions = [];
+
+    if (activeTab === 'srt') {
+      if (!srtFile) {
+        Alert.alert('⚠️ SRT ফাইল প্রয়োজন', 'অনুগ্রহ করে একটি .srt ফাইল আপলোড করুন অথবা ডেমো টেস্ট করুন।');
+        return;
+      }
+      const parsed = parseSRT(srtFile.content);
+      captions = srtToMotionJSON(parsed);
+    } else {
+      // Direct Claude JSON
+      if (!jsonInput.trim()) {
+        Alert.alert('⚠️ JSON প্রয়োজন', 'Claude থেকে জেনারেট করা Motion JSON পেস্ট করুন।');
+        return;
+      }
+      try {
+        const parsed = JSON.parse(jsonInput);
+        captions = Array.isArray(parsed) ? parsed : parsed.captions || [];
+      } catch (err) {
+        Alert.alert('⚠️ ভুল JSON', 'JSON ফরম্যাট সঠিক নয়। অনুগ্রহ করে কোডটি ঠিকমতো কপি করে পেস্ট করুন।');
+        return;
+      }
+    }
+
+    if (captions.length === 0) {
+      Alert.alert('⚠️ কোনো ক্যাপশন নেই', 'কমপক্ষে ১টি ক্যাপশন প্রয়োজন।');
+      return;
+    }
+
+    // Navigate to Live Studio Player
+    navigation.navigate('LiveStudio', {
+      captions,
+      audioUri: audioFile?.uri || null,
+      audioName: audioFile?.name || 'Demo Audio Sync',
+    });
+  };
+
+  // 4. Quick Demo Setup
+  const handleDemo = () => {
+    const demoSRT = `1
+00:00:00,500 --> 00:00:02,800
+আমি আজকে তোমাদের দেখাব!
+
+2
+00:00:03,000 --> 00:00:05,800
+কিভাবে ফোনে মোশন গ্রাফিক্স ক্যাপশন ভিডিও বানাবে?
+
+3
+00:00:06,000 --> 00:00:08,500
+Alex Hormozi স্টাইলে অটো ওয়ার্ড হাইলাইট হবে।
+
+4
+00:00:08,800 --> 00:00:11,500
+সাথে ব্যাকগ্রাউন্ড মিউজিক আর দারুণ সাউন্ড ইফেক্ট!
+
+5
+00:00:11,800 --> 00:00:14,200
+এখনই নিজের ব্রাউজার থেকে লাইভ প্রিভিউ প্লে করে দেখো!`;
+
+    const parsed = parseSRT(demoSRT);
+    const captions = srtToMotionJSON(parsed);
+
+    navigation.navigate('LiveStudio', {
+      captions,
+      audioUri: null,
+      audioName: 'Auto Studio Demo Audio',
+    });
   };
 
   return (
     <View style={styles.container}>
-      
-
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backIcon}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Input</Text>
-        <View style={{ width: 44 }} />
+        <Text style={styles.headerTitle}>Studio Input</Text>
+        <TouchableOpacity style={styles.demoHeaderBtn} onPress={handleDemo}>
+          <Text style={styles.demoHeaderText}>Demo Test ✨</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.sectionTitle}>📄 SRT File Upload</Text>
-        <Text style={styles.subtitle}>
-          Audio থেকে SRT বানাও (যেকোনো transcription app দিয়ে), তারপর এখানে upload করো।
-        </Text>
+        {/* Step 1: Audio Selection */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.stepBadge}>১</Text>
+            <Text style={styles.cardTitle}>ভয়েস / অডিও ফাইল (ঐচ্ছিক)</Text>
+          </View>
+          <Text style={styles.cardDesc}>
+            তোমার ভয়েস রেকর্ড (.mp3/.m4a/.wav) আপলোড করো যাতে লাইভ প্লেয়ারে অডিওর সাথে ক্যাপশন সিঙ্ক হয়।
+          </Text>
 
-        {/* Upload Button */}
-        <TouchableOpacity style={styles.uploadCard} onPress={pickSRTFile} disabled={loading}>
-          <LinearGradient
-            colors={['rgba(124,58,237,0.2)', 'rgba(79,70,229,0.1)']}
-            style={styles.uploadGradient}
-          >
-            {loading ? (
-              <ActivityIndicator color={COLORS.primary} size="large" />
-            ) : (
-              <>
-                <Text style={styles.uploadIcon}>📂</Text>
-                <Text style={styles.uploadTitle}>SRT File বেছে নাও</Text>
-                <Text style={styles.uploadSub}>.srt format</Text>
-              </>
-            )}
+          <TouchableOpacity style={styles.uploadBtn} onPress={pickAudioFile}>
+            <Text style={styles.uploadBtnIcon}>{audioFile ? '🎵' : '➕'}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.uploadBtnText}>
+                {audioFile ? audioFile.name : 'অডিও ফাইল সিলেক্ট করো (.mp3, .wav)'}
+              </Text>
+              {audioFile && <Text style={styles.uploadBtnSub}>অডিও সফলভাবে সিলেক্ট হয়েছে</Text>}
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Step 2: SRT or Claude JSON Tab */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.stepBadge}>২</Text>
+            <Text style={styles.cardTitle}>ক্যাপশন সোর্স নির্বাচন করো</Text>
+          </View>
+
+          <View style={styles.tabsRow}>
+            <TouchableOpacity
+              style={[styles.tabBtn, activeTab === 'srt' && styles.tabBtnActive]}
+              onPress={() => setActiveTab('srt')}
+            >
+              <Text style={[styles.tabBtnText, activeTab === 'srt' && styles.tabBtnTextActive]}>
+                📄 SRT ফাইল আপলোড
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.tabBtn, activeTab === 'json' && styles.tabBtnActive]}
+              onPress={() => setActiveTab('json')}
+            >
+              <Text style={[styles.tabBtnText, activeTab === 'json' && styles.tabBtnTextActive]}>
+                🤖 Claude JSON পেস্ট
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {activeTab === 'srt' ? (
+            <View>
+              <TouchableOpacity style={styles.srtDropZone} onPress={pickSRTFile} disabled={loading}>
+                {loading ? (
+                  <ActivityIndicator color={COLORS.primary} />
+                ) : (
+                  <>
+                    <Text style={{ fontSize: 32, marginBottom: 8 }}>📄</Text>
+                    <Text style={styles.srtDropTitle}>
+                      {srtFile ? srtFile.name : 'SRT ফাইল নির্বাচন করো'}
+                    </Text>
+                    <Text style={styles.srtDropSub}>
+                      {srtFile ? 'সরাসরি ভিডিও মোশন JSON-এ কনভার্ট হবে' : '.srt ফাইল দিন'}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View>
+              <TextInput
+                style={styles.jsonInput}
+                multiline
+                placeholder='Claude-এর দেওয়া JSON এখানে পেস্ট করো... e.g. [{"start": 0.5, "end": 2.5, "text": "Hello"}]'
+                placeholderTextColor={COLORS.whiteAlpha40}
+                value={jsonInput}
+                onChangeText={setJsonInput}
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Action Button */}
+        <TouchableOpacity style={styles.actionBtn} onPress={handleProceed}>
+          <LinearGradient colors={['#7C3AED', '#4F46E5']} style={styles.actionGrad}>
+            <Text style={styles.actionText}>🎬 লাইভ প্রিভিউ স্টুডিও ওপেন করো ➔</Text>
           </LinearGradient>
         </TouchableOpacity>
-
-        {/* OR divider */}
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>অথবা</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        {/* Sample */}
-        <TouchableOpacity style={styles.sampleBtn} onPress={useSampleSRT}>
-          <Text style={styles.sampleIcon}>✨</Text>
-          <View>
-            <Text style={styles.sampleTitle}>Sample দিয়ে দেখো</Text>
-            <Text style={styles.sampleSub}>Demo captions দিয়ে template test করো</Text>
-          </View>
-          <Text style={styles.arrow}>→</Text>
-        </TouchableOpacity>
-
-        {/* SRT Format Guide */}
-        <View style={styles.guide}>
-          <Text style={styles.guideTitle}>📝 SRT Format কেমন হয়?</Text>
-          <View style={styles.codeBlock}>
-            <Text style={styles.code}>{`1\n00:00:01,000 --> 00:00:03,500\nতোমার caption এখানে\n\n2\n00:00:04,000 --> 00:00:06,000\nপরের caption এখানে`}</Text>
-          </View>
-
-          <Text style={styles.guideTitle}>🎙️ SRT কোথা থেকে পাবে?</Text>
-          <View style={styles.tipList}>
-            {srtSources.map((s, i) => (
-              <View key={i} style={styles.tip}>
-                <Text style={styles.tipIcon}>{s.icon}</Text>
-                <View>
-                  <Text style={styles.tipTitle}>{s.name}</Text>
-                  <Text style={styles.tipDesc}>{s.desc}</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
       </ScrollView>
     </View>
   );
 }
-
-const srtSources = [
-  { icon: '🤖', name: 'Claude / ChatGPT', desc: 'Audio transcript দাও, SRT চাও' },
-  { icon: '🎥', name: 'CapCut', desc: 'Auto caption export করো' },
-  { icon: '📱', name: 'Whisper App', desc: 'Free speech-to-SRT app' },
-  { icon: '✏️', name: 'নিজে লেখো', desc: 'Notepad-এ SRT format-এ লেখো' },
-];
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.bg },
@@ -162,56 +264,85 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
-  backBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  backIcon: { fontSize: 24, color: '#FFFFFF' },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: '#FFFFFF' },
+  backBtn: { width: 40, height: 40, justifyContent: 'center' },
+  backIcon: { fontSize: 24, color: '#FFF' },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#FFF' },
+  demoHeaderBtn: { backgroundColor: 'rgba(124,58,237,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
+  demoHeaderText: { color: COLORS.primaryLight, fontSize: 13, fontWeight: '700' },
   scroll: { padding: 20, paddingBottom: 60 },
-  sectionTitle: { fontSize: 20, fontWeight: '800', color: '#FFFFFF', marginBottom: 8 },
-  subtitle: { fontSize: 14, color: COLORS.whiteAlpha40, lineHeight: 20, marginBottom: 24 },
-  uploadCard: { borderRadius: 20, overflow: 'hidden', marginBottom: 20 },
-  uploadGradient: {
-    padding: 48,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.primary,
+  card: {
+    backgroundColor: COLORS.bgCard,
     borderRadius: 20,
-    borderStyle: 'dashed',
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  uploadIcon: { fontSize: 48, marginBottom: 12 },
-  uploadTitle: { fontSize: 18, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
-  uploadSub: { fontSize: 13, color: COLORS.whiteAlpha40 },
-  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 20, gap: 12 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
-  dividerText: { fontSize: 14, color: COLORS.whiteAlpha40 },
-  sampleBtn: {
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+  stepBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    color: '#FFF',
+    textAlign: 'center',
+    fontWeight: '800',
+    lineHeight: 24,
+    fontSize: 13,
+  },
+  cardTitle: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+  cardDesc: { fontSize: 13, color: COLORS.whiteAlpha40, marginBottom: 14, lineHeight: 18 },
+  uploadBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: COLORS.bgElevated,
+    borderRadius: 14,
+    padding: 14,
     gap: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
-    marginBottom: 32,
   },
-  sampleIcon: { fontSize: 28 },
-  sampleTitle: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
-  sampleSub: { fontSize: 12, color: COLORS.whiteAlpha40, marginTop: 2 },
-  arrow: { marginLeft: 'auto', fontSize: 20, color: COLORS.primary },
-  guide: {
-    backgroundColor: COLORS.bgCard,
-    borderRadius: 20,
-    padding: 20,
+  uploadBtnIcon: { fontSize: 22 },
+  uploadBtnText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
+  uploadBtnSub: { color: COLORS.success, fontSize: 11, marginTop: 2 },
+  tabsRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: COLORS.bgElevated,
     borderWidth: 1,
     borderColor: COLORS.border,
-    gap: 16,
   },
-  guideTitle: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
-  codeBlock: { backgroundColor: '#0D0D15', borderRadius: 12, padding: 14 },
-  code: { fontFamily: 'monospace', fontSize: 12, color: '#A78BFA', lineHeight: 20 },
-  tipList: { gap: 12 },
-  tip: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  tipIcon: { fontSize: 22, marginTop: 2 },
-  tipTitle: { fontSize: 14, fontWeight: '600', color: '#FFFFFF' },
-  tipDesc: { fontSize: 12, color: COLORS.whiteAlpha40, marginTop: 2 },
+  tabBtnActive: { borderColor: COLORS.primary, backgroundColor: 'rgba(124,58,237,0.25)' },
+  tabBtnText: { color: COLORS.whiteAlpha40, fontSize: 12, fontWeight: '700' },
+  tabBtnTextActive: { color: '#FFF' },
+  srtDropZone: {
+    backgroundColor: 'rgba(124,58,237,0.1)',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: COLORS.primary,
+    padding: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  srtDropTitle: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+  srtDropSub: { color: COLORS.whiteAlpha40, fontSize: 12, marginTop: 4 },
+  jsonInput: {
+    backgroundColor: COLORS.bgElevated,
+    borderRadius: 14,
+    padding: 14,
+    height: 140,
+    color: '#A78BFA',
+    fontFamily: 'monospace',
+    fontSize: 12,
+    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  actionBtn: { borderRadius: 16, overflow: 'hidden', marginTop: 10 },
+  actionGrad: { padding: 18, alignItems: 'center' },
+  actionText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
 });

@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './src/screens/HomeScreen';
 import InputScreen from './src/screens/InputScreen';
+import LiveStudioScreen from './src/screens/LiveStudioScreen';
 import TemplatePickerScreen from './src/screens/TemplatePickerScreen';
 import CustomizeScreen from './src/screens/CustomizeScreen';
 import RenderScreen from './src/screens/RenderScreen';
@@ -21,6 +22,7 @@ export default function App() {
       >
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Input" component={InputScreen} />
+        <Stack.Screen name="LiveStudio" component={LiveStudioScreen} />
         <Stack.Screen name="TemplatePicker" component={TemplatePickerScreen} />
         <Stack.Screen name="Customize" component={CustomizeScreen} />
         <Stack.Screen name="Render" component={RenderScreen} />
